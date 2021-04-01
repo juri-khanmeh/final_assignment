@@ -11,35 +11,41 @@ This is the package to simulate the non-holonomic robot
 by using navigation stack on gazebo environment.
 The robot is localized by user request.
 The robot can implement the following tasks:
-1. move randomly in the environment, by choosing 1 out of 6 possible target positions:
+1. Move randomly in the environment, by choosing 1 out of 6 possible target positions:
    [(-4,-3);(-4,2);(-4,7);(5,-7);(5,-3);(5,1)], implementing a random position service.
-2. directly ask the user of the next target position (checking that the position is one of the possible six)
+2. Directly ask the user of the next target position (checking that the position is one of the possible six)
    and reach it
-3. start following the external walls
-4. stop in the last position
+3. Start following the external walls
+4. Stop in the last position
 
 ## Content of Package
 ### Nodes
 1. (control)
-* ROS publisher: publishing the robot speed
-* ROS subscriber: subscribe for robot position
-* ROS client: receiving a random target
+* ROS publisher: publishing the robot speed.
+* ROS subscriber: subscribing for robot status.
+* ROS client: calling (user_interface),(move_random),(move_target),(wall_following) services.
+
 2. (user_interface)
-* ROS server: Service Server replys to the client with a option number
+* ROS server: service server replys to the client with a option number.
+
 3. (move_random)
-* ROS server: Service Server, execute to move robot randomly
-* ROS publisher: publishing the robot target position
-* ROS subscriber: subscribe for robot position
+* ROS server: service server, execute to move robot randomly.
+* ROS publisher: publishing the robot target position.
+* ROS subscriber: subscribing for robot position.
+* ROS client: calling (random_pos) and receive a random target.
+
 4. (move_target)
-* ROS server: Service Server, executed to move robot to a target
-* ROS publisher: publishing the robot target position
-* ROS subscriber: subscribe for robot position
+* ROS server: service server, executed to move robot to a target.
+* ROS publisher: publishing the robot target position.
+* ROS subscriber: subscribing for robot position.
+
 5. (random_pos)
-* ROS server: Service Server replys to the client with a random target
+* ROS server: service server, replys to the client with a random target.
+
 6. (wall_following)
-* ROS server: Service Server, executed to let the robot follow wall
-* ROS publisher: publishing the robot speed
-* ROS subscriber: subscribe for laser scan value
+* ROS server: Service Server, executed to let the robot follow wall.
+* ROS publisher: publishing the robot speed.
+* ROS subscriber: subscribing for laser scan value.
 
 ### Topics
 - /cmd_vel
@@ -108,42 +114,42 @@ Let's describe the role of each main nodes.
   - change the state depending on user's request.
 
 - (move_to_targe)
-  - make the robot move to a specific position
+  - make the robot move to a specific position.
 
 - (move_random)
-  - let the robot move freely in the environment
+  - let the robot move freely in the environment.
 
 - (wall_follow_switch)
-  - make the robot follow the external wall
+  - make the robot follow the external wall.
 
 - (user_interface)
-  - ask user to enter an option number
+  - ask user to enter an option number.
 
 - (random_pos)
-  -  generate the random target position from [(-4,-3),(-4,2),(-4,7),(5,-7),(5,-3),(5,1)]
+  -  generate the random target position from [(-4,-3),(-4,2),(-4,7),(5,-7),(5,-3),(5,1)].
 
-Let's see the process flow
+Let's see the process flow.
 - (user_interference)
-* ask the user to insert an option between 1 to 4
-* if the inserted number was from 1 to 4 the number is assigned to global parameter 'option'
+* ask the user to insert an option.
+* if the inserted number was from 1 to 4 the number is assigned to global parameter 'option'.
 
 - Case 1: Move Randomly
-* (move_random) service is called. In which (random_pos) will be called and generate a random position. The generated position is assigned into the global parameter 'destination_pos'
-* (move_random) sends the 'destination_pos' to move_base by publishing on move_base/goal
+* (move_random) service is called. In which (random_pos) is called and generate a random position. The generated position is assigned into the global parameter 'destination_pos'
+* (move_random) node sends the 'destination_pos' to move_base by publishing on move_base/goal
 * (move_random) node keeps printing robot info unitl the goal is reached. 
 * (control) node subscribes to move_base/status topic in order to know when the robot reaches its goal.
 * if the target is reached, (move_random) stops printing info and (control) node calls (user_interference) service.
 
 - Case 2: Move to Target
 * (move_to_targe) service is called. It asks the user to enter a target position. 
-* If the target matches a predefined position, it assigns the entered position into the global parameter 'destination_pos'
+* If the target matches a predefined position, it assigns the entered position into the global parameter 'destination_pos'.
 * (move_random) node keeps printing robot info unitl the goal is reached. 
 * (control) node subscribes to move_base/status topic in order to know when the robot reaches its goal.
 * if the target is reached, (move_random) stops printing info and (control) node calls (user_interference) service.
 
 - Case 3: Following Wall
 * (wall_follow_switch) is called. The robot starts to follow walls.
-* (user_interference) service is called. (But the robot keeps moving and following walls)
+* (user_interference) service is called. (But the robot keeps moving and following walls).
 
 - Case 4: Stop
 * (control) node simply publishes zero velocities on /cmd_vel topic. 
